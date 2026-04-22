@@ -96,17 +96,16 @@
 -keep class com.aurora.store.data.room.favourite.ImportExport { *; }
 -keep class com.aurora.store.data.room.favourite.Favourite { *; }
 
-# kotlinx.serialization
--keepattributes *Annotation*, InnerClasses
+# kotlinx.serialization — keep serializers and all annotations so @SerialName mappings survive R8
+-keepattributes *Annotation*, InnerClasses, Signature
 -dontnote kotlinx.serialization.AnnotationsKt
+-keep class kotlinx.serialization.** { *; }
 -keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
 -keepclasseswithmembers class kotlinx.serialization.json.** { kotlinx.serialization.KSerializer serializer(...); }
 -keep,includedescriptorclasses class com.aurora.**$$serializer { *; }
 -keepclassmembers class com.aurora.** { *** Companion; }
 -keepclasseswithmembers class com.aurora.** { kotlinx.serialization.KSerializer serializer(...); }
--keep,includedescriptorclasses class com.aurora.gplayapi.**$$serializer { *; }
--keepclassmembers class com.aurora.gplayapi.** { *** Companion; }
--keepclasseswithmembers class com.aurora.gplayapi.** { kotlinx.serialization.KSerializer serializer(...); }
+-keep class com.aurora.store.data.model.SelfUpdate { *; }
 
 # With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
 # and replaces all potential values with null. Explicitly keeping the interfaces prevents this.
