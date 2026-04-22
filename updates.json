@@ -1,6 +1,6 @@
 {
   "version_name": "4.8.1",
-  "version_code": 73,
+  "version_code": 74,
   "aurora_build": "https://github.com/gwku/aurora-app-updater/releases/download/v4.8.1/app-updater-v4.8.1.apk",
   "fdroid_build": "",
   "changelog": "https://github.com/gwku/aurora-app-updater/releases/tag/v4.8.1",
