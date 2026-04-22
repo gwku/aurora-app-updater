@@ -90,7 +90,7 @@ class HttpClient @Inject constructor(private val okHttpClient: OkHttpClient) : I
     }
 
     override fun postAuth(url: String, body: ByteArray): PlayResponse {
-        val headers = mapOf("User-Agent" to "${APPLICATION_ID}-${VERSION_NAME}-${VERSION_CODE}")
+        val headers = mapOf("User-Agent" to "com.aurora.store-${VERSION_NAME}-${VERSION_CODE}")
         val requestBody = body.toRequestBody("application/json".toMediaType(), 0, body.size)
         val request = Request(
             url = url.toHttpUrl(),
@@ -124,7 +124,7 @@ class HttpClient @Inject constructor(private val okHttpClient: OkHttpClient) : I
     }
 
     override fun getAuth(url: String): PlayResponse {
-        val headers = mapOf("User-Agent" to "${APPLICATION_ID}-${VERSION_NAME}-${VERSION_CODE}")
+        val headers = mapOf("User-Agent" to "com.aurora.store-${VERSION_NAME}-${VERSION_CODE}")
         val request = Request(
             url = url.toHttpUrl(),
             headers = headers.toHeaders(),
