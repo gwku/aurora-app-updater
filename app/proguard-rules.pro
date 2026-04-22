@@ -96,6 +96,18 @@
 -keep class com.aurora.store.data.room.favourite.ImportExport { *; }
 -keep class com.aurora.store.data.room.favourite.Favourite { *; }
 
+# kotlinx.serialization
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+-keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
+-keepclasseswithmembers class kotlinx.serialization.json.** { kotlinx.serialization.KSerializer serializer(...); }
+-keep,includedescriptorclasses class com.aurora.**$$serializer { *; }
+-keepclassmembers class com.aurora.** { *** Companion; }
+-keepclasseswithmembers class com.aurora.** { kotlinx.serialization.KSerializer serializer(...); }
+-keep,includedescriptorclasses class com.aurora.gplayapi.**$$serializer { *; }
+-keepclassmembers class com.aurora.gplayapi.** { *** Companion; }
+-keepclasseswithmembers class com.aurora.gplayapi.** { kotlinx.serialization.KSerializer serializer(...); }
+
 # With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
 # and replaces all potential values with null. Explicitly keeping the interfaces prevents this.
 -if interface * { @retrofit2.http.* <methods>; }
