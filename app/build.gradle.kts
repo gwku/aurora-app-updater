@@ -55,7 +55,7 @@ configure<ApplicationExtension> {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.aurora.store"
+        applicationId = "nl.gwku.appupdater"
         minSdk = 23
         targetSdk = 36
 
@@ -71,7 +71,19 @@ configure<ApplicationExtension> {
     }
 
     signingConfigs {
-        if (File("signing.properties").exists()) {
+        val envStoreFile = System.getenv("SIGNING_STORE_FILE")
+        val envStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+        val envKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+        val envKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+
+        if (envStoreFile != null) {
+            create("release") {
+                storeFile = file(envStoreFile)
+                storePassword = envStorePassword
+                keyAlias = envKeyAlias
+                keyPassword = envKeyPassword
+            }
+        } else if (File("signing.properties").exists()) {
             create("release") {
                 val properties = Properties().apply {
                     File("signing.properties").inputStream().use { load(it) }
@@ -101,7 +113,7 @@ configure<ApplicationExtension> {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (File("signing.properties").exists()) {
+            if (System.getenv("SIGNING_STORE_FILE") != null || File("signing.properties").exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }

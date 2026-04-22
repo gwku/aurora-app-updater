@@ -32,7 +32,6 @@ import com.aurora.Constants
 import com.aurora.extensions.browse
 import com.aurora.extensions.navigate
 import com.aurora.extensions.requiresObbDir
-import com.aurora.store.MobileNavigationDirections
 import com.aurora.store.R
 import com.aurora.store.compose.navigation.Screen
 import com.aurora.store.data.model.MinimalApp
@@ -77,9 +76,7 @@ class UpdatesFragment : BaseFragment<FragmentUpdatesBinding>() {
                 }
 
                 R.id.menu_more -> {
-                    findNavController().navigate(
-                        MobileNavigationDirections.actionGlobalMoreDialogFragment()
-                    )
+                    findNavController().navigate(R.id.settingsFragment)
                 }
             }
             true
@@ -114,9 +111,7 @@ class UpdatesFragment : BaseFragment<FragmentUpdatesBinding>() {
             viewModel.fetchUpdates()
         }
 
-        binding.searchFab.setOnClickListener {
-            requireContext().navigate(Screen.Search)
-        }
+        binding.searchFab.visibility = View.GONE
     }
 
     private fun updateController(appList: Map<Update, Download?>?) {

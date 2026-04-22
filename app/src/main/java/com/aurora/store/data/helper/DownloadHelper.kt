@@ -76,10 +76,18 @@ class DownloadHelper @Inject constructor(
     }
 
     /**
-     * Enqueues an app for download & install
-     * @param app [App] to download
+     * Enqueues an app for download & install.
+     * Restricted to updates only — silently refuses if the package is not already installed.
      */
     suspend fun enqueueApp(app: App) {
+        val isInstalled = runCatching {
+            context.packageManager.getPackageInfo(app.packageName, 0)
+            true
+        }.getOrDefault(false)
+        if (!isInstalled) {
+            Log.w(TAG, "Blocked install of new app ${app.packageName} — updates only mode")
+            return
+        }
         downloadDao.insert(Download.fromApp(app))
     }
 

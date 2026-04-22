@@ -29,7 +29,6 @@ import com.aurora.store.util.CertUtil.GOOGLE_PLAY_AUTH_TOKEN_TYPE
 import com.aurora.store.util.CertUtil.GOOGLE_PLAY_CERT
 import com.aurora.store.util.PackageUtil
 import com.aurora.store.util.Preferences
-import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT_SELECTED_TAB
 import com.aurora.store.util.Preferences.PREFERENCE_INTRO
 import com.aurora.store.util.Preferences.PREFERENCE_MICROG_AUTH
 import com.aurora.store.view.ui.commons.BaseFragment
@@ -169,23 +168,8 @@ abstract class BaseFlavouredSplashFragment : BaseFragment<FragmentSplashBinding>
     }
 
     private fun navigateToDefaultTab() {
-        val defaultDestination =
-            Preferences.getInteger(requireContext(), PREFERENCE_DEFAULT_SELECTED_TAB)
-        val directions =
-            when (requireArguments().getInt("destinationId", defaultDestination)) {
-                R.id.updatesFragment -> {
-                    requireArguments().remove("destinationId")
-                    SplashFragmentDirections.actionSplashFragmentToUpdatesFragment()
-                }
-
-                1 -> SplashFragmentDirections.actionSplashFragmentToGamesContainerFragment()
-
-                2 -> SplashFragmentDirections.actionSplashFragmentToUpdatesFragment()
-
-                else -> SplashFragmentDirections.actionSplashFragmentToNavigationApps()
-            }
         requireActivity().viewModelStore.clear() // Clear ViewModelStore to avoid bugs with logout
-        findNavController().navigate(directions)
+        findNavController().navigate(SplashFragmentDirections.actionSplashFragmentToUpdatesFragment())
     }
 
     private fun requestAuthTokenForGoogle(accountName: String, oldToken: String? = null) {
