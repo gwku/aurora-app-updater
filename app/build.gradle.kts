@@ -59,8 +59,8 @@ configure<ApplicationExtension> {
         minSdk = 23
         targetSdk = 36
 
-        versionCode = 75
-        versionName = "4.9.1"
+        versionCode = 76
+        versionName = "4.9.2"
 
         testInstrumentationRunner = "com.aurora.store.HiltInstrumentationTestRunner"
         testInstrumentationRunnerArguments["disableAnalytics"] = "true"

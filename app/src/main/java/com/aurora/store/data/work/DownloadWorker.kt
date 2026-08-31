@@ -331,12 +331,38 @@ class DownloadWorker @AssistedInject constructor(
                     CertUtil.getEncodedCertificateHashes(context, download.packageName).last()
                 ).downloadable()
             } else {
+                /*
+                 * An account can only be delivered an app that is in its library. Updates are
+                 * fine, since the account owns whatever it installed, but a first install on a
+                 * freshly dispensed account owns nothing at all — so add it to the library
+                 * first, or delivery refuses no matter how many accounts we try.
+                 */
+                if (!acquire(helper, packageName, versionCode, offerType)) {
+                    Log.w(TAG, "Could not add $packageName to the account's library")
+                }
                 helper.purchase(packageName, versionCode, offerType).downloadable()
             }
         } catch (exception: Exception) {
             Log.e(TAG, "Failed to purchase $packageName", exception)
             return emptyList()
         }
+    }
+
+    /**
+     * Adds a free app to the current account's library.
+     * @return true if Play accepted the acquisition
+     */
+    private fun acquire(
+        helper: PurchaseHelper,
+        packageName: String,
+        versionCode: Long,
+        offerType: Int
+    ): Boolean = try {
+        helper.acquire(packageName, versionCode, offerType)
+            .also { Log.i(TAG, "Acquired $packageName for this account: $it") }
+    } catch (exception: Exception) {
+        Log.e(TAG, "Failed to acquire $packageName", exception)
+        false
     }
 
     /**
