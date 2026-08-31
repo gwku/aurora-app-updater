@@ -42,7 +42,8 @@ data class SelfUpdate(
     val timestamp: Long = 0L
 ) {
     companion object {
-        private const val BASE_URL = "https://gitlab.com/AuroraOSS/AuroraStore/-/raw/master"
+        private const val BASE_URL =
+            "https://raw.githubusercontent.com/gwku/aurora-app-updater/main"
 
         fun toApp(selfUpdate: SelfUpdate, context: Context): App {
             // Keep paths updated with fastlane data on project
@@ -62,7 +63,7 @@ data class SelfUpdate(
                 size = selfUpdate.size,
                 updatedOn = selfUpdate.updatedOn,
                 displayName = context.getString(R.string.app_name),
-                developerName = "Rahul Kumar Patel",
+                developerName = "gwku",
                 iconArtwork = Artwork(url = "$BASE_URL/$icon"),
                 fileList = mutableListOf(
                     PlayFile(

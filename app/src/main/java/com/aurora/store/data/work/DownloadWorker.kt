@@ -85,6 +85,8 @@ class DownloadWorker @AssistedInject constructor(
          * How many anonymous accounts to try before giving up on a purchase.
          */
         private const val MAX_ACCOUNT_ATTEMPTS = 3
+
+        private const val HTTP_TOO_MANY_REQUESTS = 429
     }
 
     private lateinit var download: Download
@@ -111,14 +113,23 @@ class DownloadWorker @AssistedInject constructor(
         // Fetch required data for download
         try {
             download = downloadDao.getDownload(inputData.getString(DownloadHelper.PACKAGE_NAME)!!)
-
-            val response = (httpClient as HttpClient).call(download.iconURL).body
-            val bitmap = BitmapFactory.decodeStream(
-                withContext(Dispatchers.IO) { response.byteStream() }
-            )
-            icon = bitmap.scale(96, 96)
         } catch (exception: Exception) {
             return onFailure(exception)
+        }
+
+        /*
+         * The icon only decorates the notification, so never fail an install over it. Icons are
+         * fetched from wherever the app's metadata points, which can be a host we pin or one that
+         * is simply down — neither is a reason to refuse to install the app the user asked for.
+         */
+        icon = try {
+            val response = (httpClient as HttpClient).call(download.iconURL).body
+            BitmapFactory.decodeStream(
+                withContext(Dispatchers.IO) { response.byteStream() }
+            )?.scale(96, 96)
+        } catch (exception: Exception) {
+            Log.w(TAG, "Failed to fetch icon for ${download.packageName}", exception)
+            null
         }
 
         // Set work/service to foreground on < Android 12.0
@@ -288,8 +299,16 @@ class DownloadWorker @AssistedInject constructor(
             val files = purchaseWith(purchaseHelper, packageName, versionCode, offerType)
             if (files.isNotEmpty()) return files
 
-            // A personal account is the user's; only anonymous ones are ours to swap out
-            val worthRetrying = attempt < MAX_ACCOUNT_ATTEMPTS - 1 && authProvider.isAnonymous
+            /*
+             * Only a throttled response is worth another account. An app that is paid, or not
+             * available for this device or region, will refuse every account we try, and
+             * burning accounts from a shared pool to hear the same answer helps nobody.
+             *
+             * A personal account is the user's; only anonymous ones are ours to swap out.
+             */
+            val worthRetrying = attempt < MAX_ACCOUNT_ATTEMPTS - 1 &&
+                authProvider.isAnonymous &&
+                httpClient.responseCode.value == HTTP_TOO_MANY_REQUESTS
             if (!worthRetrying || !dispenseAnonymousAccount()) return emptyList()
         }
 

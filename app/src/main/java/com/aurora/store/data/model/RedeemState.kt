@@ -38,5 +38,10 @@ sealed interface RedeemState {
      */
     data class Installing(val app: App) : RedeemState
 
+    /**
+     * The code was good but the app never made it onto the device.
+     */
+    data class DownloadFailed(val app: App) : RedeemState
+
     data class Failed(val error: RedeemError) : RedeemState
 }

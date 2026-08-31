@@ -163,6 +163,12 @@ private fun ScreenContent(
                     onReset = onReset
                 )
 
+                is RedeemState.DownloadFailed -> DownloadFailedContent(
+                    app = state.app,
+                    onRetry = onInstall,
+                    onReset = onReset
+                )
+
                 else -> InputContent(
                     code = code,
                     error = (state as? RedeemState.Failed)?.error,
@@ -300,6 +306,31 @@ private fun InstallingContent(
     }
 }
 
+@Composable
+private fun DownloadFailedContent(app: App, onRetry: () -> Unit = {}, onReset: () -> Unit = {}) {
+    Icon(
+        painter = painterResource(R.drawable.ic_problem),
+        contentDescription = null,
+        modifier = Modifier.requiredSize(dimensionResource(R.dimen.icon_size))
+    )
+    Text(
+        text = stringResource(R.string.redeem_download_failed, app.displayName),
+        style = MaterialTheme.typography.titleMedium,
+        textAlign = TextAlign.Center
+    )
+    Text(
+        text = stringResource(R.string.redeem_download_failed_summary),
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center
+    )
+    Button(modifier = Modifier.fillMaxWidth(), onClick = onRetry) {
+        Text(text = stringResource(R.string.action_retry))
+    }
+    OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = onReset) {
+        Text(text = stringResource(R.string.action_redeem_another))
+    }
+}
+
 private val RedeemError.messageRes: Int
     get() = when (this) {
         RedeemError.MALFORMED -> R.string.redeem_error_malformed
@@ -332,5 +363,15 @@ private fun RedeemScreenErrorPreview() {
 private fun RedeemScreenGrantedPreview(@PreviewParameter(AppPreviewProvider::class) app: App) {
     PreviewTemplate {
         ScreenContent(state = RedeemState.Granted(app))
+    }
+}
+
+@Preview
+@Composable
+private fun RedeemScreenDownloadFailedPreview(
+    @PreviewParameter(AppPreviewProvider::class) app: App
+) {
+    PreviewTemplate {
+        ScreenContent(state = RedeemState.DownloadFailed(app))
     }
 }

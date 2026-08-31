@@ -4,6 +4,8 @@
 
 package com.aurora.store.data.model
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -36,9 +38,14 @@ data class Grant(
 /**
  * Contents of the published grants file.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class GrantFile(
-    @SerialName("version") val version: Int = VERSION,
+    /*
+     * Written out even though it matches the default, otherwise the marker vanishes the first
+     * time the app rewrites the file and there is nothing left to migrate against later.
+     */
+    @EncodeDefault @SerialName("version") val version: Int = VERSION,
     @SerialName("grants") val grants: List<Grant> = emptyList()
 ) {
 

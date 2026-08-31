@@ -560,6 +560,9 @@
     <string name="redeem_installing">Installing <xliff:g id="app">%1$s</xliff:g></string>
     <string name="action_redeem">Redeem</string>
     <string name="action_redeem_another">Use another code</string>
+    <string name="action_retry">Try again</string>
+    <string name="redeem_download_failed">Couldn\'t download <xliff:g id="app">%1$s</xliff:g></string>
+    <string name="redeem_download_failed_summary">Google turned the download down. Try again in a few minutes — if it keeps failing, ask your admin to sign in with a Google account.</string>
     <string name="redeem_error_malformed">A code is 8 characters long</string>
     <string name="redeem_error_unknown">We don\'t know that code. Check it with your admin.</string>
     <string name="redeem_error_expired">That code has expired. Ask your admin for a new one.</string>

@@ -9,8 +9,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aurora.extensions.TAG
+import com.aurora.gplayapi.data.models.App
 import com.aurora.gplayapi.helpers.AppDetailsHelper
 import com.aurora.store.data.helper.DownloadHelper
+import com.aurora.store.data.model.DownloadStatus
 import com.aurora.store.data.model.Grant
 import com.aurora.store.data.model.RedeemError
 import com.aurora.store.data.model.RedeemState
@@ -22,8 +24,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -41,6 +47,7 @@ class RedeemViewModel @Inject constructor(
     val isAdmin = adminProvider.isUnlocked
 
     private var grant: Grant? = null
+    private var installWatcher: Job? = null
 
     /**
      * Looks up the code and, if it is good for an app, loads that app ready to install.
@@ -110,17 +117,49 @@ class RedeemViewModel @Inject constructor(
      * Hands the granted app to the download queue and spends the code.
      */
     fun install() {
-        val app = (state.value as? RedeemState.Granted)?.app ?: return
+        val app = when (val current = state.value) {
+            is RedeemState.Granted -> current.app
+            is RedeemState.DownloadFailed -> current.app
+            else -> return
+        }
         val codeHash = grant?.codeHash ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             downloadHelper.enqueueGrantedApp(app)
             adminProvider.markCodeSpent(codeHash)
             _state.value = RedeemState.Installing(app)
+            watchInstall(app)
         }
     }
 
+    /**
+     * Reports a download that never completed back on this screen.
+     *
+     * Someone who has just typed in a code is watching this screen, not the notification shade,
+     * and a code that looks like it worked but quietly installed nothing is the worst outcome
+     * for a feature meant to save a trip to the device.
+     */
+    private fun watchInstall(app: App) {
+        installWatcher?.cancel()
+        installWatcher = downloadHelper.downloadsList
+            .mapNotNull { list -> list.find { it.packageName == app.packageName } }
+            .onEach { download ->
+                when (download.status) {
+                    DownloadStatus.FAILED,
+                    DownloadStatus.CANCELLED,
+                    DownloadStatus.UNAVAILABLE -> {
+                        _state.value = RedeemState.DownloadFailed(app)
+                    }
+
+                    else -> Unit
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun reset() {
+        installWatcher?.cancel()
+        installWatcher = null
         grant = null
         _state.value = RedeemState.Idle
     }
