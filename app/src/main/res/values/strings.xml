@@ -551,4 +551,51 @@
     <!-- Misc -->
     <string name="loading">Loading in progress</string>
     <string name="page">Page <xliff:g id="number">%1$d</xliff:g></string>
+
+    <!-- Redeem codes -->
+    <string name="title_redeem">Redeem a code</string>
+    <string name="redeem_summary">Ask your admin for a code, then type it here to install the app they picked for you.</string>
+    <string name="redeem_hint">XXXXXXXX</string>
+    <string name="redeem_granted">Your code unlocks this app</string>
+    <string name="redeem_installing">Installing <xliff:g id="app">%1$s</xliff:g></string>
+    <string name="action_redeem">Redeem</string>
+    <string name="action_redeem_another">Use another code</string>
+    <string name="redeem_error_malformed">A code is 8 characters long</string>
+    <string name="redeem_error_unknown">We don\'t know that code. Check it with your admin.</string>
+    <string name="redeem_error_expired">That code has expired. Ask your admin for a new one.</string>
+    <string name="redeem_error_used">That code has already been used</string>
+    <string name="redeem_error_installed">That app is already installed</string>
+    <string name="redeem_error_network">Couldn\'t reach the server. Check your connection and try again.</string>
+    <string name="redeem_error_unavailable">That app isn\'t available for this device</string>
+
+    <!-- Admin -->
+    <string name="title_admin">Admin</string>
+    <string name="admin_unlock_summary">Paste a GitHub token with write access to the app\'s repository to hand out codes from this device.</string>
+    <string name="admin_token_hint">github_pat_…</string>
+    <string name="admin_token_rejected">That token can\'t reach the repository</string>
+    <string name="admin_token_help">How to create a token</string>
+    <string name="action_unlock">Unlock</string>
+    <string name="action_done">Done</string>
+    <string name="action_lock">Lock admin tools</string>
+    <string name="action_revoke">Revoke</string>
+    <string name="revoke_grant_title">Revoke this code?</string>
+    <string name="revoke_grant_summary">The code for \"<xliff:g id="app">%1$s</xliff:g>\" will stop working. Anyone who already installed the app keeps it.</string>
+    <string name="admin_no_grants">No codes handed out yet</string>
+    <string name="admin_failed">Something went wrong. Check your connection and token.</string>
+    <string name="admin_issue_title">New code</string>
+    <string name="admin_issue_search_summary">Search for the app, or paste its package name.</string>
+    <string name="admin_issue_search_hint">Signal, or org.thoughtcrime.securesms</string>
+    <string name="admin_issue_validity">Code stays usable for</string>
+    <string name="admin_issue_note_hint">Note to self (optional)</string>
+    <string name="admin_issue_action">Create code</string>
+    <plurals name="admin_issue_days">
+        <item quantity="one"><xliff:g id="days">%1$d</xliff:g> day</item>
+        <item quantity="other"><xliff:g id="days">%1$d</xliff:g> days</item>
+    </plurals>
+    <string name="admin_code_title">Code for <xliff:g id="app">%1$s</xliff:g></string>
+    <string name="admin_code_summary">Good for one install. Send it over however you like.</string>
+    <string name="admin_code_message">To install <xliff:g id="app">%1$s</xliff:g>, open App Updater, tap Redeem a code and enter: <xliff:g id="code">%2$s</xliff:g></string>
+    <string name="admin_grant_expires">Expires <xliff:g id="when">%1$s</xliff:g></string>
+    <string name="admin_grant_expired">Expired</string>
+    <string name="admin_grant_no_expiry">No expiry</string>
 </resources>

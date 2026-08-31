@@ -20,6 +20,7 @@ import com.aurora.store.MainActivity
 import com.aurora.store.R
 import com.aurora.store.compose.ui.about.AboutScreen
 import com.aurora.store.compose.ui.accounts.AccountsScreen
+import com.aurora.store.compose.ui.admin.AdminScreen
 import com.aurora.store.compose.ui.blacklist.BlacklistScreen
 import com.aurora.store.compose.ui.commons.PermissionRationaleScreen
 import com.aurora.store.compose.ui.details.AppDetailsScreen
@@ -30,6 +31,7 @@ import com.aurora.store.compose.ui.favourite.FavouriteScreen
 import com.aurora.store.compose.ui.installed.InstalledScreen
 import com.aurora.store.compose.ui.onboarding.OnboardingScreen
 import com.aurora.store.compose.ui.preferences.installation.InstallerScreen
+import com.aurora.store.compose.ui.redeem.RedeemScreen
 import com.aurora.store.compose.ui.search.SearchScreen
 import com.aurora.store.compose.ui.spoof.SpoofScreen
 
@@ -154,6 +156,18 @@ fun NavDisplay(startDestination: NavKey) {
                         backstack.add(Screen.AppDetails(packageName))
                     }
                 )
+            }
+
+            entry<Screen.Redeem> {
+                RedeemScreen(
+                    onNavigateUp = ::onNavigateUp,
+                    onNavigateToDownloads = { backstack.add(Screen.Downloads) },
+                    onNavigateToAdmin = { backstack.add(Screen.Admin) }
+                )
+            }
+
+            entry<Screen.Admin> {
+                AdminScreen(onNavigateUp = ::onNavigateUp, onLocked = ::onNavigateUp)
             }
         }
     )

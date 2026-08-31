@@ -85,6 +85,22 @@ fun Context.share(displayName: String, packageName: String) {
     }
 }
 
+/**
+ * Shares plain text through the system share sheet.
+ */
+fun Context.shareText(text: String) {
+    try {
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text)
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(sendIntent, getString(R.string.action_share)))
+    } catch (exception: Exception) {
+        Log.e(TAG, "Failed to share text", exception)
+    }
+}
+
 fun Context.mailTo(email: String) {
     try {
         val sendIntent = Intent().apply {

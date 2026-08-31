@@ -106,6 +106,8 @@
 -keepclassmembers class com.aurora.** { *** Companion; }
 -keepclasseswithmembers class com.aurora.** { kotlinx.serialization.KSerializer serializer(...); }
 -keep class com.aurora.store.data.model.SelfUpdate { *; }
+-keep class com.aurora.store.data.model.Grant { *; }
+-keep class com.aurora.store.data.model.GrantFile { *; }
 
 # With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
 # and replaces all potential values with null. Explicitly keeping the interfaces prevents this.

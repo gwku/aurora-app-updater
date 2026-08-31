@@ -62,6 +62,8 @@ object Preferences {
 
     const val PREFERENCE_MIGRATION_VERSION = "PREFERENCE_MIGRATION_VERSION"
 
+    const val PREFERENCE_REDEEMED_CODES = "PREFERENCE_REDEEMED_CODES"
+
     private var prefs: SharedPreferences? = null
 
     fun getPrefs(context: Context): SharedPreferences = when (BuildConfig.FLAVOR) {

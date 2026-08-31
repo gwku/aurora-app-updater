@@ -92,6 +92,18 @@ class DownloadHelper @Inject constructor(
     }
 
     /**
+     * Enqueues an app unlocked by a redeem code for download & install.
+     *
+     * This is the one path around the updates-only restriction in [enqueueApp]; callers must have
+     * validated the grant behind the code first.
+     * @param app [App] to download
+     */
+    suspend fun enqueueGrantedApp(app: App) {
+        Log.i(TAG, "Enqueuing granted install of ${app.packageName}")
+        downloadDao.insert(Download.fromApp(app))
+    }
+
+    /**
      * Enqueues an update for download & install
      * @param update [Update] to download
      */

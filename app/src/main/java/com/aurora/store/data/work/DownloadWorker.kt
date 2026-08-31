@@ -26,6 +26,7 @@ import com.aurora.extensions.isQAndAbove
 import com.aurora.extensions.isSAndAbove
 import com.aurora.extensions.requiresObbDir
 import com.aurora.gplayapi.data.models.PlayFile
+import com.aurora.gplayapi.helpers.AuthHelper
 import com.aurora.gplayapi.helpers.PurchaseHelper
 import com.aurora.gplayapi.network.IHttpClient
 import com.aurora.store.AuroraApp
@@ -33,10 +34,12 @@ import com.aurora.store.R
 import com.aurora.store.data.event.InstallerEvent
 import com.aurora.store.data.helper.DownloadHelper
 import com.aurora.store.data.installer.AppInstaller
+import com.aurora.store.data.model.AccountType
 import com.aurora.store.data.model.Algorithm
 import com.aurora.store.data.model.DownloadInfo
 import com.aurora.store.data.model.DownloadStatus
 import com.aurora.store.data.network.HttpClient
+import com.aurora.store.data.providers.AccountProvider
 import com.aurora.store.data.providers.AuthProvider
 import com.aurora.store.data.room.download.Download
 import com.aurora.store.data.room.download.DownloadDao
@@ -66,17 +69,22 @@ import kotlinx.coroutines.withContext
  */
 @HiltWorker
 class DownloadWorker @AssistedInject constructor(
-    authProvider: AuthProvider,
+    private val authProvider: AuthProvider,
     private val downloadDao: DownloadDao,
     private val appInstaller: AppInstaller,
     private val httpClient: IHttpClient,
-    private val purchaseHelper: PurchaseHelper,
+    private var purchaseHelper: PurchaseHelper,
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters
 ) : AuthWorker(authProvider, context, workerParams) {
 
     companion object {
         private const val NOTIFICATION_ID: Int = 200
+
+        /**
+         * How many anonymous accounts to try before giving up on a purchase.
+         */
+        private const val MAX_ACCOUNT_ATTEMPTS = 3
     }
 
     private lateinit var download: Download
@@ -116,9 +124,9 @@ class DownloadWorker @AssistedInject constructor(
         // Set work/service to foreground on < Android 12.0
         setForeground(getForegroundInfo())
 
-        // Try to purchase the app if file list is empty
+        // Try to purchase the app if we have nothing we can actually fetch
         notifyStatus(DownloadStatus.PURCHASING)
-        download.fileList = download.fileList.ifEmpty {
+        download.fileList = download.fileList.downloadable().ifEmpty {
             purchase(download.packageName, download.versionCode, download.offerType)
         }
 
@@ -146,8 +154,8 @@ class DownloadWorker @AssistedInject constructor(
                     it.packageName
                 ).mkdirs()
 
-                // Purchase shared lib if file list is empty
-                it.fileList = it.fileList.ifEmpty {
+                // Purchase shared lib if we have nothing we can actually fetch
+                it.fileList = it.fileList.downloadable().ifEmpty {
                     purchase(it.packageName, it.versionCode, 0)
                 }
                 files.addAll(it.fileList)
@@ -248,29 +256,100 @@ class DownloadWorker @AssistedInject constructor(
     }
 
     /**
-     * Purchases the app to get the download URL of the required files
+     * Files Play actually gave us a download URL for.
+     *
+     * A delivery response can come back naming files it never handed over a URL for — an HTTP 429
+     * on /fdfe/delivery is the usual cause. Keeping those would fail the download with an opaque
+     * URL parse error, and worse, they get persisted: the next attempt would see a non-empty file
+     * list, skip the purchase entirely and fail again without ever reaching Play.
+     */
+    private fun List<PlayFile>.downloadable(): List<PlayFile> = filterNot { it.url.isBlank() }
+
+    /**
+     * Purchases the app to get the download URL of the required files, drawing a fresh anonymous
+     * account and trying again whenever Play hands us nothing we can download.
+     *
+     * Anonymous accounts come from a shared pool, so Play throttles them for reasons that have
+     * nothing to do with this device: a 200 on /fdfe/purchase followed by a 429 on /fdfe/delivery,
+     * which yields files that have names but no URLs. Installing an app the account does not
+     * already own is the request most likely to be refused, so this matters far more for a new
+     * install than for an update. Another account from the dispenser usually goes through.
      * @param packageName The packageName of the app
      * @param versionCode Required version of the app
      * @param offerType Offer type of the app (free/paid)
-     * @return A list of purchased files
+     * @return A list of purchased files, empty if every account came back empty-handed
      */
-    private fun purchase(packageName: String, versionCode: Long, offerType: Int): List<PlayFile> {
+    private suspend fun purchase(
+        packageName: String,
+        versionCode: Long,
+        offerType: Int
+    ): List<PlayFile> {
+        repeat(MAX_ACCOUNT_ATTEMPTS) { attempt ->
+            val files = purchaseWith(purchaseHelper, packageName, versionCode, offerType)
+            if (files.isNotEmpty()) return files
+
+            // A personal account is the user's; only anonymous ones are ours to swap out
+            val worthRetrying = attempt < MAX_ACCOUNT_ATTEMPTS - 1 && authProvider.isAnonymous
+            if (!worthRetrying || !dispenseAnonymousAccount()) return emptyList()
+        }
+
+        return emptyList()
+    }
+
+    private fun purchaseWith(
+        helper: PurchaseHelper,
+        packageName: String,
+        versionCode: Long,
+        offerType: Int
+    ): List<PlayFile> {
         try {
             // Android 9.0+ supports key rotation, so purchase with latest certificate's hash
             return if (isPAndAbove && PackageUtil.isInstalled(context, download.packageName)) {
-                purchaseHelper.purchase(
+                helper.purchase(
                     packageName,
                     versionCode,
                     offerType,
                     CertUtil.getEncodedCertificateHashes(context, download.packageName).last()
-                )
+                ).downloadable()
             } else {
-                purchaseHelper.purchase(packageName, versionCode, offerType)
+                helper.purchase(packageName, versionCode, offerType).downloadable()
             }
         } catch (exception: Exception) {
             Log.e(TAG, "Failed to purchase $packageName", exception)
             return emptyList()
         }
+    }
+
+    /**
+     * Draws a new anonymous account from a dispenser and makes it the one we buy with.
+     *
+     * The injected [PurchaseHelper] holds whichever account existed when it was built and offers
+     * no way to change it, so the new session needs a helper of its own.
+     * @return true if a usable account was obtained
+     */
+    private suspend fun dispenseAnonymousAccount(): Boolean {
+        Log.i(TAG, "Play gave us nothing to download, asking the dispenser for a new account")
+
+        val authData = authProvider.buildAnonymousAuthData().getOrNull()
+        if (authData == null ||
+            authData.authToken.isBlank() ||
+            authData.deviceConfigToken.isBlank()
+        ) {
+            Log.e(TAG, "Dispenser did not hand out a usable account")
+            return false
+        }
+
+        authProvider.saveAuthData(authData)
+        AccountProvider.login(
+            context,
+            authData.email,
+            authData.aasToken.ifBlank { authData.authToken },
+            if (authData.aasToken.isBlank()) AuthHelper.Token.AUTH else AuthHelper.Token.AAS,
+            AccountType.ANONYMOUS
+        )
+        purchaseHelper = PurchaseHelper(authData).using(httpClient)
+
+        return true
     }
 
     /**

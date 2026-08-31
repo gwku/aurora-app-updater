@@ -71,6 +71,10 @@ class UpdatesFragment : BaseFragment<FragmentUpdatesBinding>() {
         // Toolbar
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
+                R.id.menu_redeem -> {
+                    requireContext().navigate(Screen.Redeem)
+                }
+
                 R.id.menu_download_manager -> {
                     requireContext().navigate(Screen.Downloads)
                 }

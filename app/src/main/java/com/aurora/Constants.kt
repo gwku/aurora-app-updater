@@ -40,6 +40,17 @@ object Constants {
     const val UPDATE_URL_STABLE = "https://raw.githubusercontent.com/gwku/aurora-app-updater/main/updates.json"
     const val UPDATE_URL_NIGHTLY = UPDATE_URL_STABLE
 
+    // APP GRANTS (redeem codes)
+    const val GITHUB_API_URL = "https://api.github.com"
+    const val GRANTS_REPO_OWNER = "gwku"
+    const val GRANTS_REPO_NAME = "aurora-app-updater"
+    const val GRANTS_REPO_BRANCH = "main"
+    const val GRANTS_FILE_PATH = "grants.json"
+    const val GRANTS_URL_RAW =
+        "https://raw.githubusercontent.com/$GRANTS_REPO_OWNER/$GRANTS_REPO_NAME/" +
+            "$GRANTS_REPO_BRANCH/$GRANTS_FILE_PATH"
+    const val GRANTS_TOKEN_HELP_URL = "https://github.com/settings/personal-access-tokens"
+
     const val NOTIFICATION_CHANNEL_EXPORT = "NOTIFICATION_CHANNEL_EXPORT"
     const val NOTIFICATION_CHANNEL_INSTALL = "NOTIFICATION_CHANNEL_INSTALL"
     const val NOTIFICATION_CHANNEL_DOWNLOADS = "NOTIFICATION_CHANNEL_DOWNLOADS"
