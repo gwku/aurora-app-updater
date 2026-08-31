@@ -1,9 +1,9 @@
 {
-  "version_name": "4.9.1",
-  "version_code": 75,
-  "aurora_build": "https://github.com/gwku/aurora-app-updater/releases/download/v4.9.1/app-updater-v4.9.1.apk",
+  "version_name": "4.9.2",
+  "version_code": 76,
+  "aurora_build": "https://github.com/gwku/aurora-app-updater/releases/download/v4.9.2/app-updater-v4.9.2.apk",
   "fdroid_build": "",
-  "changelog": "https://github.com/gwku/aurora-app-updater/releases/tag/v4.9.1",
-  "size": 9215535,
+  "changelog": "https://github.com/gwku/aurora-app-updater/releases/tag/v4.9.2",
+  "size": 9215538,
   "updated_on": "Aug 31, 2026"
 }
