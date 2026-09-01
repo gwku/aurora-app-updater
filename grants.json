@@ -1,3 +1,13 @@
 {
-    "version": 1
+    "version": 1,
+    "grants": [
+        {
+            "code_hash": "76b1eb63233fb10a7724874fd1d743a0abc9dbcc4974ee2b3c7f0344b975aafc",
+            "package_name": "nl.marktplaats.android",
+            "display_name": "Marktplaats",
+            "icon_url": "https://play-lh.googleusercontent.com/oIrxiwucneW6zYkedCg1yu7IsSNvslAj0PPpSS0JACDbFLuKld1cYLHvXg_1ltIJK9SYJ7QQTfhiUQQb4tDrvEw",
+            "issued_at": 1788284153,
+            "expires_at": 1788888953
+        }
+    ]
 }
