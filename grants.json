@@ -1,3 +1,13 @@
 {
-    "version": 1
+    "version": 1,
+    "grants": [
+        {
+            "code_hash": "3a6f1deab195d13f702483536419a84c082ab05792be722470185ec59a618687",
+            "package_name": "com.chess",
+            "display_name": "Chess - Play and Learn Online",
+            "icon_url": "https://play-lh.googleusercontent.com/JO7Z75U1oypXpNTAklroO5emKWePni0sK9zn1E_nRgqmbAHoMxz1oQHDfSTpcycdht92dTBejkpEDXttGeCWN74",
+            "issued_at": 1788277209,
+            "expires_at": 1788363609
+        }
+    ]
 }
